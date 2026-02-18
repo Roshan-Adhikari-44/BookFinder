@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Finder</title>
+    <!-- LINK TO CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Categories</h2>
+        <button onclick="showPage('newRelease')">New Release</button>
+        <button onclick="showPage('bestsellers')">Bestsellers</button>
+        <button onclick="showPage('fiction')">Fiction</button>
+        <button onclick="showPage('nonFiction')">Non-Fiction</button>
+        <button onclick="showPage('gothic')">Gothic Fiction</button>
+        <button onclick="showPage('children')">Children Fiction</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <h1>📚 Book Finder</h1>
+
+        <!-- SEARCH -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Enter book name">
+            <button id="searchButton" onclick="searchBooks()">Search</button>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results"></div>
+
+        <!-- PAGES -->
+        <div id="newRelease" class="page">New Release Books Section</div>
+        <div id="bestsellers" class="page">Bestseller Books Section</div>
+        <div id="fiction" class="page">Fiction Books Section</div>
+        <div id="nonFiction" class="page">Non-Fiction Books Section</div>
+        <div id="gothic" class="page">Gothic Fiction Books Section</div>
+        <div id="children" class="page">Children Fiction Books Section</div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        // SEARCH FUNCTION
+        function searchBooks() {
+            const query = document.getElementById("searchInput").value;
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "Loading...";
+
+            fetch("https://www.googleapis.com/books/v1/volumes?q=" + query)
+                .then(res => res.json())
+                .then(data => {
+                    resultsDiv.innerHTML = "";
+
+                    if (!data.items) {
+                        resultsDiv.innerHTML = "No books found.";
+                        return;
+                    }
+
+                    data.items.forEach(book => {
+                        const info = book.volumeInfo;
+                        const bookDiv = document.createElement("div");
+                        bookDiv.className = "book";
+                        bookDiv.innerHTML = `
+                            <img src="${info.imageLinks ? info.imageLinks.thumbnail : 'https://via.placeholder.com/150'}">
+                            <h3>${info.title || "No title"}</h3>
+                            <p><strong>Author:</strong> ${info.authors ? info.authors.join(", ") : "Unknown"}</p>
+                            <p>${info.description ? info.description.substring(0,100) + "..." : ""}</p>
+                        `;
+                        resultsDiv.appendChild(bookDiv);
+                    });
+                });
+        }
+
+        // SIDEBAR NAVIGATION
+        const buttons = document.querySelectorAll('.sidebar button');
+        const pages = document.querySelectorAll('.page');
+
+        function showPage(id) {
+            pages.forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+
+            buttons.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
